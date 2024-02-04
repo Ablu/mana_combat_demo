@@ -1,7 +1,16 @@
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
+use clap::Parser;
+
+mod client;
 mod helpers;
+mod server;
+mod shared;
+
+use client::ClientPluginGroup;
+use server::ServerPluginGroup;
 
 fn startup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(Camera2dBundle::default());
@@ -14,20 +23,34 @@ fn startup(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 }
 
+#[derive(Parser, PartialEq, Debug)]
+enum Cli {
+    Server {},
+    Client {},
+}
+
 fn main() {
-    App::new()
-        .add_plugins(
-            DefaultPlugins
-                .set(WindowPlugin {
-                    primary_window: Some(Window {
-                        title: String::from("Tiled Map Editor Example"),
-                        ..Default::default()
-                    }),
-                    ..default()
-                })
-                .set(ImagePlugin::default_nearest()),
-        )
-        .add_plugins(TilemapPlugin)
+    let cli = Cli::parse();
+    let mut app = App::new();
+    app.add_plugins(
+        DefaultPlugins
+            .set(WindowPlugin {
+                primary_window: Some(Window {
+                    title: String::from("Tiled Map Editor Example"),
+                    ..Default::default()
+                }),
+                ..default()
+            })
+            .set(ImagePlugin::default_nearest()),
+    );
+
+    app.add_plugins(WorldInspectorPlugin::new());
+    match cli {
+        Cli::Server {} => app.add_plugins(ServerPluginGroup::new()),
+        Cli::Client {} => app.add_plugins(ClientPluginGroup::new()),
+    };
+
+    app.add_plugins(TilemapPlugin)
         .add_plugins(helpers::tiled::TiledMapPlugin)
         .add_systems(Startup, startup)
         .add_systems(Update, helpers::camera::movement)
