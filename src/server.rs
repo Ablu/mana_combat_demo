@@ -1,15 +1,27 @@
 use std::net::Ipv4Addr;
 use std::{net::SocketAddr, time::Duration};
 
-use bevy::app::{App, Plugin, PluginGroup, PluginGroupBuilder};
+use bevy::app::{App, FixedUpdate, Plugin, PluginGroup, PluginGroupBuilder};
+use bevy::ecs::entity::Entity;
+use bevy::ecs::system::{Query, Res};
+use bevy::log::info;
+use bevy::prelude::*;
+use leafwing_input_manager::prelude::*;
 use lightyear::prelude::LinkConditionerConfig;
 use lightyear::server::config::{NetcodeConfig, ServerConfig};
+use lightyear::server::events::ComponentInsertEvent;
 use lightyear::server::plugin::{PluginConfig, ServerPlugin};
+use lightyear::shared::replication::components::NetworkTarget;
+use lightyear::shared::sets::{FixedUpdateSet, MainSet};
+use lightyear::shared::tick_manager::TickManager;
 use lightyear::transport::io::{Io, IoConfig, TransportConfig};
 
+use crate::shared::components::{PlayerId, Position};
 use crate::shared::config::{shared_config, KEY, PROTOCOL_ID};
-use crate::shared::plugin::SharedPlugin;
-use crate::shared::protocol::{protocol, ManaProtocol};
+use crate::shared::plugin::{shared_movement_behaviour, SharedPlugin};
+use crate::shared::protocol::{
+    protocol, ManaProtocol, PlayerActions, Replicate, REPLICATION_GROUP,
+};
 
 pub const SERVER_PORT: u16 = 5000;
 
@@ -22,9 +34,9 @@ impl ServerPluginGroup {
         let server_addr = SocketAddr::new(Ipv4Addr::UNSPECIFIED.into(), 8888);
         let transport_config = TransportConfig::UdpSocket(server_addr);
         let link_conditioner = LinkConditionerConfig {
-            incoming_latency: Duration::from_millis(0),
-            incoming_jitter: Duration::from_millis(0),
-            incoming_loss: 0.0,
+            incoming_latency: Duration::from_millis(500),
+            incoming_jitter: Duration::from_millis(20),
+            incoming_loss: 0.02,
         };
         let io = Io::from_config(
             IoConfig::from_transport(transport_config).with_conditioner(link_conditioner),
@@ -52,5 +64,58 @@ impl PluginGroup for ServerPluginGroup {
         PluginGroupBuilder::start::<Self>()
             .add(self.lightyear)
             .add(SharedPlugin)
+            .add(ManaServerPlugin)
+    }
+}
+
+pub struct ManaServerPlugin;
+
+impl Plugin for ManaServerPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(FixedUpdate, (movement).in_set(FixedUpdateSet::Main));
+        app.add_systems(
+            PreUpdate,
+            (replicate_players).in_set(MainSet::ClientReplication),
+        );
+    }
+}
+
+pub(crate) fn movement(
+    tick_manager: Res<TickManager>,
+    mut action_query: Query<(Entity, &mut Position, &ActionState<PlayerActions>)>,
+) {
+    for (entity, position, action) in action_query.iter_mut() {
+        info!(?entity, tick = ?tick_manager.tick(), ?position, actions = ?action.get_pressed(), "applying movement to player");
+        shared_movement_behaviour(position, action);
+    }
+}
+
+pub(crate) fn replicate_players(
+    mut commands: Commands,
+    mut player_spawn_reader: EventReader<ComponentInsertEvent<PlayerId>>,
+) {
+    for event in player_spawn_reader.read() {
+        debug!("received player spawn event: {:?}", event);
+        let client_id = event.context();
+        let entity = event.entity();
+
+        // for all cursors we have received, add a Replicate component so that we can start replicating it
+        // to other clients
+
+        if let Some(mut e) = commands.get_entity(entity) {
+            let mut replicate = Replicate {
+                replication_target: NetworkTarget::AllExcept(vec![*client_id]),
+                interpolation_target: NetworkTarget::AllExcept(vec![*client_id]),
+                prediction_target: NetworkTarget::AllExcept(vec![*client_id]),
+                replication_group: REPLICATION_GROUP,
+                ..default()
+            };
+
+            e.insert((
+                replicate,
+                // not all physics components are replicated over the network, so add them on the server as well
+                // PhysicsBundle::player(),
+            ));
+        }
     }
 }

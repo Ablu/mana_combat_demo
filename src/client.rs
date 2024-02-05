@@ -3,35 +3,37 @@ use std::{
     time::Duration,
 };
 
-use bevy::{
-    app::{App, Plugin, PluginGroup, PluginGroupBuilder, Startup},
-    core_pipeline::core_2d::Camera2dBundle,
-    ecs::system::{Commands, Res, Resource},
-    render::color::Color,
-    text::TextStyle,
-    ui::{node_bundles::TextBundle, AlignSelf, Style},
-};
-
+use bevy::{app::PluginGroupBuilder, diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
+use leafwing_input_manager::prelude::*;
 use lightyear::{
     client::{
+        components::Confirmed,
         config::{ClientConfig, NetcodeConfig},
-        interpolation::plugin::{InterpolationConfig, InterpolationDelay},
+        input_leafwing::{LeafwingInputConfig, LeafwingInputPlugin},
+        interpolation::{
+            plugin::{InterpolationConfig, InterpolationDelay, InterpolationSet},
+            Interpolated,
+        },
         plugin::{ClientPlugin, PluginConfig},
-        prediction::plugin::PredictionConfig,
+        prediction::{
+            plugin::{PredictionConfig, PredictionSet},
+            Predicted,
+        },
         resource::Authentication,
     },
     netcode::ClientId,
     prelude::LinkConditionerConfig,
+    shared::{sets::FixedUpdateSet, tick_manager::TickManager},
     transport::io::{Io, IoConfig, TransportConfig},
 };
 use rand::Rng;
 
 use crate::shared::{
     bundles,
-    components::Position,
+    components::{PlayerId, Position},
     config::{shared_config, KEY, PROTOCOL_ID},
-    plugin::SharedPlugin,
-    protocol::{protocol, ClientMut, ManaProtocol},
+    plugin::{draw_sprite, shared_movement_behaviour, SharedPlugin},
+    protocol::{protocol, ClientMut, ManaProtocol, PlayerActions},
 };
 
 pub const INPUT_DELAY_TICKS: u16 = 0;
@@ -56,8 +58,8 @@ impl ClientPluginGroup {
         let client_addr = SocketAddr::new(Ipv4Addr::UNSPECIFIED.into(), 0);
         let transport_config = TransportConfig::UdpSocket(client_addr);
         let link_conditioner = LinkConditionerConfig {
-            incoming_latency: Duration::from_millis(75),
-            incoming_jitter: Duration::from_millis(10),
+            incoming_latency: Duration::from_millis(500),
+            incoming_jitter: Duration::from_millis(200),
             incoming_loss: 0.02,
         };
         let io = Io::from_config(
@@ -91,6 +93,12 @@ impl PluginGroup for ClientPluginGroup {
                 client_id: self.client_id,
             })
             .add(SharedPlugin)
+            .add(LeafwingInputPlugin::<ManaProtocol, PlayerActions>::new(
+                LeafwingInputConfig::<PlayerActions> {
+                    send_diffs_only: true,
+                    ..Default::default()
+                },
+            ))
     }
 }
 
@@ -109,6 +117,14 @@ impl Plugin for ManaClientPlugin {
             client_id: self.client_id,
         });
         app.add_systems(Startup, init);
+        app.add_systems(FixedUpdate, (predict_movement).in_set(FixedUpdateSet::Main));
+        app.add_systems(Update, draw_own_player);
+        app.add_systems(
+            PostUpdate,
+            (draw_confirmed, draw_predicted, draw_interpolated)
+                .after(InterpolationSet::Interpolate)
+                .after(PredictionSet::VisualCorrection),
+        );
     }
 }
 
@@ -130,6 +146,80 @@ pub(crate) fn init(mut commands: Commands, mut client: ClientMut, global: Res<Gl
     commands.spawn(bundles::Player::new(
         global.client_id,
         Position { x: 100.0, y: 100.0 },
+        InputMap::new([
+            (KeyCode::W, PlayerActions::Up),
+            (KeyCode::S, PlayerActions::Down),
+            (KeyCode::A, PlayerActions::Left),
+            (KeyCode::D, PlayerActions::Right),
+        ]),
     ));
     let _ = client.connect();
+}
+
+pub(crate) fn predict_movement(
+    tick_manager: Res<TickManager>,
+    mut action_query: Query<(Entity, &mut Position, &ActionState<PlayerActions>)>,
+) {
+    for (entity, position, action) in action_query.iter_mut() {
+        info!(?entity, tick = ?tick_manager.tick(), ?position, actions = ?action.get_pressed(), "applying movement to player");
+        shared_movement_behaviour(position, action);
+    }
+}
+
+pub(crate) fn draw_confirmed(
+    mut gizmos: Gizmos,
+    players: Query<&Position, (With<Confirmed>, With<PlayerId>)>,
+) {
+    for position in &players {
+        gizmos.rect_2d(
+            Vec2::new(position.x, position.y),
+            0.0,
+            Vec2::new(64.0, 64.0),
+            Color::GREEN,
+        );
+    }
+}
+
+pub(crate) fn draw_predicted(
+    mut gizmos: Gizmos,
+    players: Query<&Position, (With<Predicted>, With<PlayerId>)>,
+) {
+    for position in &players {
+        gizmos.rect_2d(
+            Vec2::new(position.x, position.y),
+            0.0,
+            Vec2::new(64.0, 64.0),
+            Color::YELLOW,
+        );
+    }
+}
+
+pub(crate) fn draw_interpolated(
+    mut gizmos: Gizmos,
+    players: Query<&Position, (With<Interpolated>, With<PlayerId>)>,
+) {
+    for position in &players {
+        gizmos.rect_2d(
+            Vec2::new(position.x, position.y),
+            0.0,
+            Vec2::new(64.0, 64.0),
+            Color::BLUE,
+        );
+    }
+}
+
+pub(crate) fn draw_own_player(
+    mut gizmos: Gizmos,
+    global: Res<Global>,
+    players: Query<
+        (&PlayerId, &Position),
+        (With<PlayerId>, Without<Predicted>, Without<Interpolated>),
+    >,
+) {
+    for (id, pos) in &players {
+        if id.0 != global.client_id {
+            continue;
+        }
+        draw_sprite(&mut gizmos, pos);
+    }
 }

@@ -53,6 +53,5 @@ fn main() {
     app.add_plugins(TilemapPlugin)
         .add_plugins(helpers::tiled::TiledMapPlugin)
         .add_systems(Startup, startup)
-        .add_systems(Update, helpers::camera::movement)
         .run();
 }

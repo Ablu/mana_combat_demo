@@ -591,6 +591,7 @@ dependencies = [
  "bevy_tasks",
  "bevy_utils",
  "bytemuck",
+ "serde",
 ]
 
 [[package]]
@@ -686,7 +687,7 @@ dependencies = [
 [[package]]
 name = "bevy_ecs_tilemap"
 version = "0.12.0"
-source = "git+https://github.com/StarArawn/bevy_ecs_tilemap.git#b08a5d997867d5e5a760e296dc38e435c6b268cc"
+source = "git+https://github.com/StarArawn/bevy_ecs_tilemap.git?rev=b08a5d997867d5e5a760e296dc38e435c6b268cc#b08a5d997867d5e5a760e296dc38e435c6b268cc"
 dependencies = [
  "bevy",
  "log",
@@ -808,6 +809,7 @@ dependencies = [
  "bevy_math",
  "bevy_reflect",
  "bevy_utils",
+ "serde",
  "thiserror",
 ]
 
@@ -1114,6 +1116,7 @@ dependencies = [
  "bevy_reflect",
  "bevy_utils",
  "crossbeam-channel",
+ "serde",
  "thiserror",
 ]
 
@@ -1128,6 +1131,7 @@ dependencies = [
  "bevy_hierarchy",
  "bevy_math",
  "bevy_reflect",
+ "serde",
  "thiserror",
 ]
 
@@ -1204,6 +1208,7 @@ dependencies = [
  "bevy_reflect",
  "bevy_utils",
  "raw-window-handle",
+ "serde",
 ]
 
 [[package]]
@@ -1878,6 +1883,12 @@ dependencies = [
  "epaint",
  "nohash-hasher",
 ]
+
+[[package]]
+name = "either"
+version = "1.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a26ae43d7bcc3b814de94796a5e736d4029efb0ee900c12e2d54c993ad1a1e07"
 
 [[package]]
 name = "emath"
@@ -2591,6 +2602,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c4a9b56eb56058f43dc66e58f40a214b2ccbc9f3df51861b63d51dec7b65bc3f"
 
 [[package]]
+name = "itertools"
+version = "0.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ba291022dbbd398a455acf126c1e341954079855bc60dfdda641363bd6922569"
+dependencies = [
+ "either",
+]
+
+[[package]]
 name = "itoa"
 version = "1.0.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2703,6 +2723,34 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "830d08ce1d1d941e6b30645f1a0eb5643013d835ce3779a5fc208261dbe10f55"
 
 [[package]]
+name = "leafwing-input-manager"
+version = "0.11.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "61e0ad1622a1664b055990aac9efd90a9012b82737847e6a85d36ce38d2bf7c4"
+dependencies = [
+ "bevy",
+ "derive_more",
+ "fixedbitset",
+ "itertools 0.12.1",
+ "leafwing_input_manager_macros",
+ "multimap",
+ "once_cell",
+ "serde",
+]
+
+[[package]]
+name = "leafwing_input_manager_macros"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cde8ae98d45607e4015d0b772d4a234788ebd7a41f09879f408c7f772b81e5bf"
+dependencies = [
+ "proc-macro-crate 2.0.0",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.48",
+]
+
+[[package]]
 name = "lewton"
 version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2782,6 +2830,7 @@ dependencies = [
  "enum_dispatch",
  "getrandom",
  "instant",
+ "leafwing-input-manager",
  "lightyear_macros",
  "paste",
  "rand",
@@ -2852,6 +2901,7 @@ dependencies = [
  "bevy-inspector-egui",
  "bevy_ecs_tilemap",
  "clap",
+ "leafwing-input-manager",
  "lightyear",
  "rand",
  "serde",
@@ -2924,6 +2974,15 @@ dependencies = [
  "log",
  "wasi",
  "windows-sys 0.48.0",
+]
+
+[[package]]
+name = "multimap"
+version = "0.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e1a5d38b9b352dbd913288736af36af41c48d61b1a8cd34bcecd727561b7d511"
+dependencies = [
+ "serde",
 ]
 
 [[package]]
@@ -3115,7 +3174,7 @@ version = "0.5.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dcbff9bc912032c62bf65ef1d5aea88983b420f4f839db1e9b0c281a25c9c799"
 dependencies = [
- "proc-macro-crate",
+ "proc-macro-crate 1.3.1",
  "proc-macro2",
  "quote",
  "syn 1.0.109",
@@ -3127,7 +3186,7 @@ version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "96667db765a921f7b295ffee8b60472b686a51d4f21c2ee4ffdb94c7013b65a6"
 dependencies = [
- "proc-macro-crate",
+ "proc-macro-crate 1.3.1",
  "proc-macro2",
  "quote",
  "syn 2.0.48",
@@ -3281,7 +3340,7 @@ version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0efcf6ee55f8f7a24333bc8d1dd0e541a6cedf903dbc07ae6479d7f8ff32ed08"
 dependencies = [
- "itertools",
+ "itertools 0.4.19",
 ]
 
 [[package]]
@@ -3417,6 +3476,15 @@ checksum = "7f4c021e1093a56626774e81216a4ce732a735e5bad4868a03f3ed65ca0c3919"
 dependencies = [
  "once_cell",
  "toml_edit 0.19.15",
+]
+
+[[package]]
+name = "proc-macro-crate"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7e8366a6159044a37876a2b9817124296703c586a5c92e2c53751fa06d8d43e8"
+dependencies = [
+ "toml_edit 0.20.7",
 ]
 
 [[package]]
@@ -3931,7 +3999,7 @@ dependencies = [
 [[package]]
 name = "tiled"
 version = "0.11.3"
-source = "git+https://github.com/mapeditor/rs-tiled.git#c8ac751ee01aee74011c624484baae727a667123"
+source = "git+https://github.com/mapeditor/rs-tiled.git?rev=c8ac751ee01aee74011c624484baae727a667123#c8ac751ee01aee74011c624484baae727a667123"
 dependencies = [
  "base64 0.21.7",
  "flate2",

@@ -8,10 +8,11 @@ edition = "2021"
 [dependencies]
 bevy = {version = "0.12.1", features=["dynamic_linking"]}
 bevy-inspector-egui = "0.22.1"
-bevy_ecs_tilemap = { git = "https://github.com/StarArawn/bevy_ecs_tilemap.git", reference="b08a5d997867d5e5a760e296dc38e435c6b268cc" }
+bevy_ecs_tilemap = { git = "https://github.com/StarArawn/bevy_ecs_tilemap.git", rev="b08a5d997867d5e5a760e296dc38e435c6b268cc" }
 clap = { version = "4.4.18", features = ["derive"] }
-lightyear = "0.8.1"
+leafwing-input-manager = "0.11.2"
+lightyear = {version = "0.8.1", features = ["leafwing"] }
 rand = "0.8.5"
 serde = { version = "1.0.196", features = ["derive"] }
 thiserror = "1.0.56"
-tiled = { git = "https://github.com/mapeditor/rs-tiled.git", reference="c8ac751ee01aee74011c624484baae727a667123"}
+tiled = { git = "https://github.com/mapeditor/rs-tiled.git", rev="c8ac751ee01aee74011c624484baae727a667123" }
