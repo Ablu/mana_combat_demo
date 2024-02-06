@@ -3,6 +3,7 @@ use crate::shared::{
     protocol::{PlayerActions, Replicate, REPLICATION_GROUP},
 };
 use bevy::prelude::*;
+use bevy_aseprite::{anim::AsepriteAnimation, AsepriteBundle};
 use leafwing_input_manager::prelude::*;
 use lightyear::netcode::ClientId;
 
@@ -12,6 +13,12 @@ pub struct Player {
     position: Position,
     replicate: Replicate,
     inputs: InputManagerBundle<PlayerActions>,
+    sprite: AsepriteBundle,
+}
+
+pub mod sprites {
+    use bevy_aseprite::aseprite;
+    aseprite!(pub Player, "player.aseprite");
 }
 
 impl Player {
@@ -19,6 +26,7 @@ impl Player {
         id: ClientId,
         position: Position,
         input_map: InputMap<PlayerActions>,
+        asset_server: &AssetServer,
     ) -> Self {
         Self {
             id: PlayerId(id),
@@ -34,6 +42,12 @@ impl Player {
             inputs: InputManagerBundle::<PlayerActions> {
                 action_state: ActionState::default(),
                 input_map,
+            },
+            sprite: AsepriteBundle {
+                aseprite: asset_server.load(sprites::Player::PATH),
+                animation: AsepriteAnimation::from(sprites::Player::tags::DOWN_STAND),
+                transform: Transform::from_xyz(100.0, 100.0, 10.0),
+                ..Default::default()
             },
         }
     }

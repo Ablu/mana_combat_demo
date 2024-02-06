@@ -4,6 +4,7 @@ use std::{
 };
 
 use bevy::{app::PluginGroupBuilder, diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
+use bevy_aseprite::{anim::AsepriteAnimation, AsepriteBundle, AsepritePlugin};
 use leafwing_input_manager::prelude::*;
 use lightyear::{
     client::{
@@ -29,7 +30,7 @@ use lightyear::{
 use rand::Rng;
 
 use crate::shared::{
-    bundles,
+    bundles::{self, player},
     components::{PlayerId, Position},
     config::{shared_config, KEY, PROTOCOL_ID},
     plugin::{draw_sprite, shared_movement_behaviour, SharedPlugin},
@@ -95,6 +96,7 @@ impl PluginGroup for ClientPluginGroup {
                     ..Default::default()
                 },
             ))
+            .add(AsepritePlugin)
     }
 }
 
@@ -114,7 +116,14 @@ impl Plugin for ManaClientPlugin {
         });
         app.add_systems(Startup, init);
         app.add_systems(FixedUpdate, (predict_movement).in_set(FixedUpdateSet::Main));
-        app.add_systems(Update, draw_own_player);
+        app.add_systems(
+            Update,
+            (
+                draw_own_player,
+                update_sprite_positions,
+                upate_sprite_direction,
+            ),
+        );
         app.add_systems(
             PostUpdate,
             (draw_confirmed, draw_predicted, draw_interpolated)
@@ -124,7 +133,12 @@ impl Plugin for ManaClientPlugin {
     }
 }
 
-pub(crate) fn init(mut commands: Commands, mut client: ClientMut, global: Res<Global>) {
+pub(crate) fn init(
+    mut commands: Commands,
+    mut client: ClientMut,
+    global: Res<Global>,
+    asset_server: Res<AssetServer>,
+) {
     commands.spawn(
         TextBundle::from_section(
             format!("Client {}", global.client_id),
@@ -139,7 +153,7 @@ pub(crate) fn init(mut commands: Commands, mut client: ClientMut, global: Res<Gl
             ..Default::default()
         }),
     );
-    commands.spawn(bundles::Player::new(
+    commands.spawn(bundles::player::Player::new(
         global.client_id,
         Position { x: 100.0, y: 100.0 },
         InputMap::new([
@@ -148,7 +162,9 @@ pub(crate) fn init(mut commands: Commands, mut client: ClientMut, global: Res<Gl
             (KeyCode::A, PlayerActions::Left),
             (KeyCode::D, PlayerActions::Right),
         ]),
+        &asset_server,
     ));
+
     let _ = client.connect();
 }
 
@@ -203,6 +219,48 @@ pub(crate) fn draw_interpolated(
     }
 }
 
+fn update_sprite_positions(mut players: Query<(&Position, &mut Transform), With<PlayerId>>) {
+    for (pos, mut transform) in &mut players {
+        transform.translation.x = pos.x;
+        transform.translation.y = pos.y;
+    }
+}
+
+fn upate_sprite_direction(
+    mut players: Query<(&ActionState<PlayerActions>, &mut AsepriteAnimation), With<PlayerId>>,
+) {
+    for (input, mut animation) in &mut players {
+        let tag = if input.just_pressed(PlayerActions::Down) {
+            player::sprites::Player::tags::DOWN
+        } else if input.just_pressed(PlayerActions::Up) {
+            player::sprites::Player::tags::UP
+        } else if input.just_pressed(PlayerActions::Left) {
+            player::sprites::Player::tags::LEFT
+        } else if input.just_pressed(PlayerActions::Right) {
+            player::sprites::Player::tags::RIGHT
+        } else {
+            if input.get_pressed().is_empty() {
+                if input.just_released(PlayerActions::Down) {
+                    player::sprites::Player::tags::DOWN_STAND
+                } else if input.just_released(PlayerActions::Up) {
+                    player::sprites::Player::tags::UP_STAND
+                } else if input.just_released(PlayerActions::Left) {
+                    player::sprites::Player::tags::LEFT_STAND
+                } else if input.just_released(PlayerActions::Right) {
+                    player::sprites::Player::tags::RIGHT_STAND
+                } else {
+                    continue;
+                }
+            } else {
+                continue;
+            }
+        };
+
+        *animation = AsepriteAnimation::from(tag);
+        animation.is_playing = true;
+    }
+}
+
 pub(crate) fn draw_own_player(
     mut gizmos: Gizmos,
     global: Res<Global>,
@@ -211,10 +269,11 @@ pub(crate) fn draw_own_player(
         (With<PlayerId>, Without<Predicted>, Without<Interpolated>),
     >,
 ) {
-    for (id, pos) in &players {
-        if id.0 != global.client_id {
-            continue;
-        }
-        draw_sprite(&mut gizmos, pos);
-    }
+    let player: Vec<_> = players
+        .iter()
+        .filter(|(id, _)| id.0 == global.client_id)
+        .collect();
+    assert_eq!(player.len(), 1);
+    let (_id, pos) = player[0];
+    draw_sprite(&mut gizmos, pos);
 }
