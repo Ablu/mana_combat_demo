@@ -20,7 +20,7 @@ use crate::shared::components::{PlayerId, Position};
 use crate::shared::config::{shared_config, KEY, PROTOCOL_ID};
 use crate::shared::plugin::{shared_movement_behaviour, SharedPlugin};
 use crate::shared::protocol::{
-    protocol, ManaProtocol, PlayerActions, Replicate, REPLICATION_GROUP,
+    protocol, ManaProtocol, PlayerActions, Replicate, LINK_CONDITIONER, REPLICATION_GROUP,
 };
 
 pub const SERVER_PORT: u16 = 5000;
@@ -33,13 +33,8 @@ impl ServerPluginGroup {
     pub fn new() -> Self {
         let server_addr = SocketAddr::new(Ipv4Addr::UNSPECIFIED.into(), 8888);
         let transport_config = TransportConfig::UdpSocket(server_addr);
-        let link_conditioner = LinkConditionerConfig {
-            incoming_latency: Duration::from_millis(500),
-            incoming_jitter: Duration::from_millis(20),
-            incoming_loss: 0.02,
-        };
         let io = Io::from_config(
-            IoConfig::from_transport(transport_config).with_conditioner(link_conditioner),
+            IoConfig::from_transport(transport_config).with_conditioner(LINK_CONDITIONER),
         );
 
         let config = ServerConfig {

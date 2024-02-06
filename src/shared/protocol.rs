@@ -3,11 +3,20 @@ use leafwing_input_manager::prelude::*;
 use lightyear::client::components::LerpFn;
 use lightyear::prelude::*;
 use serde::{Deserialize, Serialize};
-use std::ops::{Add, Mul};
+use std::{
+    ops::{Add, Mul},
+    time::Duration,
+};
 
 use crate::shared::components::*;
 
 pub const REPLICATION_GROUP: ReplicationGroup = ReplicationGroup::Group(1);
+
+pub const LINK_CONDITIONER: LinkConditionerConfig = LinkConditionerConfig {
+    incoming_latency: Duration::from_millis(150),
+    incoming_jitter: Duration::from_millis(25),
+    incoming_loss: 0.02,
+};
 
 #[message_protocol(protocol = "ManaProtocol")]
 pub enum Messages {}

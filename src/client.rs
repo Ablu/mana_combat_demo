@@ -33,7 +33,7 @@ use crate::shared::{
     components::{PlayerId, Position},
     config::{shared_config, KEY, PROTOCOL_ID},
     plugin::{draw_sprite, shared_movement_behaviour, SharedPlugin},
-    protocol::{protocol, ClientMut, ManaProtocol, PlayerActions},
+    protocol::{protocol, ClientMut, ManaProtocol, PlayerActions, LINK_CONDITIONER},
 };
 
 pub const INPUT_DELAY_TICKS: u16 = 0;
@@ -57,13 +57,9 @@ impl ClientPluginGroup {
         };
         let client_addr = SocketAddr::new(Ipv4Addr::UNSPECIFIED.into(), 0);
         let transport_config = TransportConfig::UdpSocket(client_addr);
-        let link_conditioner = LinkConditionerConfig {
-            incoming_latency: Duration::from_millis(500),
-            incoming_jitter: Duration::from_millis(200),
-            incoming_loss: 0.02,
-        };
+
         let io = Io::from_config(
-            IoConfig::from_transport(transport_config).with_conditioner(link_conditioner),
+            IoConfig::from_transport(transport_config).with_conditioner(LINK_CONDITIONER),
         );
         let config = ClientConfig {
             shared: shared_config(),
