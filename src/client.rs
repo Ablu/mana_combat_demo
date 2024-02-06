@@ -161,7 +161,6 @@ pub(crate) fn predict_movement(
     mut action_query: Query<(Entity, &mut Position, &ActionState<PlayerActions>)>,
 ) {
     for (entity, position, action) in action_query.iter_mut() {
-        info!(?entity, tick = ?tick_manager.tick(), ?position, actions = ?action.get_pressed(), "applying movement to player");
         shared_movement_behaviour(position, action);
     }
 }
