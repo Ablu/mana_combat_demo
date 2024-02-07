@@ -44,7 +44,7 @@ fn main() {
             .set(ImagePlugin::default_nearest()),
     );
 
-    app.add_plugins(WorldInspectorPlugin::new());
+    // app.add_plugins(WorldInspectorPlugin::new());
     match cli {
         Cli::Server {} => app.add_plugins(ServerPluginGroup::new()),
         Cli::Client {} => app.add_plugins(ClientPluginGroup::new()),
