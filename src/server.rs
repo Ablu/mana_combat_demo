@@ -11,6 +11,7 @@ use leafwing_input_manager::prelude::*;
 use lightyear::prelude::LinkConditionerConfig;
 use lightyear::server::config::{NetcodeConfig, ServerConfig};
 use lightyear::server::events::ComponentInsertEvent;
+use lightyear::server::input_leafwing::LeafwingInputPlugin;
 use lightyear::server::plugin::{PluginConfig, ServerPlugin};
 use lightyear::shared::replication::components::NetworkTarget;
 use lightyear::shared::sets::{FixedUpdateSet, MainSet};
@@ -59,6 +60,7 @@ impl PluginGroup for ServerPluginGroup {
     fn build(self) -> bevy::app::PluginGroupBuilder {
         PluginGroupBuilder::start::<Self>()
             .add(self.lightyear)
+            .add(LeafwingInputPlugin::<ManaProtocol, PlayerActions>::default())
             .add(SharedPlugin)
             .add(ManaServerPlugin)
     }
