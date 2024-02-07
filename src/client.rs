@@ -128,6 +128,7 @@ impl Plugin for ManaClientPlugin {
                 draw_own_player,
                 update_sprite_positions,
                 upate_sprite_direction,
+                center_camera_on_own_player,
             ),
         );
         app.add_systems(
@@ -318,5 +319,14 @@ pub(crate) fn draw_own_player(
 ) {
     for (player, pos) in players.iter().filter(|(id, _)| id.0 == global.client_id) {
         draw_sprite(&mut gizmos, pos);
+    }
+}
+
+fn center_camera_on_own_player(
+    mut camera: Query<&mut Transform, With<Camera>>,
+    player_pos: Query<&Position, (With<PlayerId>, With<Predicted>)>,
+) {
+    if let Ok(pos) = player_pos.get_single() {
+        camera.single_mut().translation = Vec2::new(pos.x, pos.y).extend(0.0);
     }
 }
