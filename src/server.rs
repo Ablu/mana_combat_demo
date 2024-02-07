@@ -102,12 +102,8 @@ pub(crate) fn replicate_players(
 
         if let Some(mut e) = commands.get_entity(entity) {
             let mut replicate = Replicate {
-                // replication_target: NetworkTarget::AllExcept(vec![*client_id]),
                 replication_target: NetworkTarget::All,
-                interpolation_target: NetworkTarget::All,
-                prediction_target: NetworkTarget::All,
-                // interpolation_target: NetworkTarget::AllExcept(vec![*client_id]),
-                // prediction_target: NetworkTarget::AllExcept(vec![*client_id]),
+                interpolation_target: NetworkTarget::AllExcept(vec![*client_id]),
                 replication_group: REPLICATION_GROUP,
                 ..default()
             };
@@ -115,11 +111,7 @@ pub(crate) fn replicate_players(
                 *client_id,
             ]));
 
-            e.insert((
-                replicate,
-                // not all physics components are replicated over the network, so add them on the server as well
-                // PhysicsBundle::player(),
-            ));
+            e.insert(replicate);
         }
     }
 }
