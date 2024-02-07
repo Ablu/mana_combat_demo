@@ -42,7 +42,7 @@ pub(crate) fn shared_movement_behaviour(
     mut pos: Mut<Position>,
     action: &ActionState<PlayerActions>,
 ) {
-    const MOVE_SPEED: f32 = 2.0;
+    const MOVE_SPEED: f32 = 3.0;
     if action.pressed(PlayerActions::Up) {
         pos.y += MOVE_SPEED;
     }
