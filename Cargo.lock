@@ -519,8 +519,7 @@ dependencies = [
 [[package]]
 name = "bevy_aseprite"
 version = "0.12.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "521170c5366f277bd52050f75e4308df35e7c680f24f5800f1abf56c9c772f62"
+source = "git+https://github.com/Ablu/bevy_aseprite.git?rev=638d34df055d1420e131f92b6e7e1499f8f061af#638d34df055d1420e131f92b6e7e1499f8f061af"
 dependencies = [
  "anyhow",
  "bevy",
@@ -531,8 +530,7 @@ dependencies = [
 [[package]]
 name = "bevy_aseprite_derive"
 version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "192e876a533ef9110d47dde52a61c8cd4d1bfd311311ad661e1378eaff6bbdb4"
+source = "git+https://github.com/Ablu/bevy_aseprite.git?rev=638d34df055d1420e131f92b6e7e1499f8f061af#638d34df055d1420e131f92b6e7e1499f8f061af"
 dependencies = [
  "bevy_aseprite_reader",
  "heck",
@@ -544,8 +542,7 @@ dependencies = [
 [[package]]
 name = "bevy_aseprite_reader"
 version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "baeca09bb10df657a4e80f87768e3c918443dbbe2493a961dc2e254a6b0feafb"
+source = "git+https://github.com/Ablu/bevy_aseprite.git?rev=638d34df055d1420e131f92b6e7e1499f8f061af#638d34df055d1420e131f92b6e7e1499f8f061af"
 dependencies = [
  "flate2",
  "image",

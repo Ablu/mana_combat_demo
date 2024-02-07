@@ -6,6 +6,7 @@ use bevy::ecs::entity::Entity;
 use bevy::ecs::system::{Query, Res};
 use bevy::log::info;
 use bevy::prelude::*;
+use bevy_aseprite::anim::AsepriteAnimation;
 use leafwing_input_manager::prelude::*;
 use lightyear::prelude::LinkConditionerConfig;
 use lightyear::server::config::{NetcodeConfig, ServerConfig};
@@ -81,6 +82,7 @@ pub(crate) fn movement(
 ) {
     for (entity, position, action) in action_query.iter_mut() {
         shared_movement_behaviour(position, action);
+        dbg!(tick_manager.tick(), entity);
     }
 }
 
@@ -98,12 +100,18 @@ pub(crate) fn replicate_players(
 
         if let Some(mut e) = commands.get_entity(entity) {
             let mut replicate = Replicate {
-                replication_target: NetworkTarget::AllExcept(vec![*client_id]),
-                interpolation_target: NetworkTarget::AllExcept(vec![*client_id]),
-                prediction_target: NetworkTarget::AllExcept(vec![*client_id]),
+                // replication_target: NetworkTarget::AllExcept(vec![*client_id]),
+                replication_target: NetworkTarget::All,
+                interpolation_target: NetworkTarget::All,
+                prediction_target: NetworkTarget::All,
+                // interpolation_target: NetworkTarget::AllExcept(vec![*client_id]),
+                // prediction_target: NetworkTarget::AllExcept(vec![*client_id]),
                 replication_group: REPLICATION_GROUP,
                 ..default()
             };
+            replicate.add_target::<ActionState<PlayerActions>>(NetworkTarget::AllExcept(vec![
+                *client_id,
+            ]));
 
             e.insert((
                 replicate,

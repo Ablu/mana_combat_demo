@@ -3,13 +3,16 @@ use std::{
     time::Duration,
 };
 
-use bevy::{app::PluginGroupBuilder, diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
+use bevy::{
+    app::PluginGroupBuilder, diagnostic::FrameTimeDiagnosticsPlugin, ecs::entity, prelude::*,
+};
 use bevy_aseprite::{anim::AsepriteAnimation, AsepriteBundle, AsepritePlugin};
 use leafwing_input_manager::prelude::*;
 use lightyear::{
     client::{
         components::Confirmed,
         config::{ClientConfig, NetcodeConfig},
+        events::ComponentInsertEvent,
         input_leafwing::{LeafwingInputConfig, LeafwingInputPlugin},
         interpolation::{
             plugin::{InterpolationConfig, InterpolationDelay, InterpolationSet},
@@ -24,7 +27,10 @@ use lightyear::{
     },
     netcode::ClientId,
     prelude::LinkConditionerConfig,
-    shared::{sets::FixedUpdateSet, tick_manager::TickManager},
+    shared::{
+        sets::{FixedUpdateSet, MainSet},
+        tick_manager::TickManager,
+    },
     transport::io::{Io, IoConfig, TransportConfig},
 };
 use rand::Rng;
@@ -34,7 +40,7 @@ use crate::shared::{
     components::{PlayerId, Position},
     config::{shared_config, KEY, PROTOCOL_ID},
     plugin::{draw_sprite, shared_movement_behaviour, SharedPlugin},
-    protocol::{protocol, ClientMut, ManaProtocol, PlayerActions, LINK_CONDITIONER},
+    protocol::{protocol, ClientMut, ManaProtocol, PlayerActions, Replicate, LINK_CONDITIONER},
 };
 
 pub const INPUT_DELAY_TICKS: u16 = 0;
@@ -130,7 +136,16 @@ impl Plugin for ManaClientPlugin {
                 .after(InterpolationSet::Interpolate)
                 .after(PredictionSet::VisualCorrection),
         );
+        app.add_systems(
+            PreUpdate,
+            (add_new_player_sprites, add_own_player_sprite).in_set(MainSet::ClientReplication),
+        );
     }
+}
+
+mod sprites {
+    use bevy_aseprite::aseprite;
+    aseprite!(pub Player, "player.aseprite");
 }
 
 pub(crate) fn init(
@@ -153,7 +168,7 @@ pub(crate) fn init(
             ..Default::default()
         }),
     );
-    commands.spawn(bundles::player::Player::new(
+    let mut player = commands.spawn(bundles::player::Player::new(
         global.client_id,
         Position { x: 100.0, y: 100.0 },
         InputMap::new([
@@ -162,16 +177,49 @@ pub(crate) fn init(
             (KeyCode::A, PlayerActions::Left),
             (KeyCode::D, PlayerActions::Right),
         ]),
-        &asset_server,
     ));
 
     let _ = client.connect();
 }
 
+fn create_player_sprite(asset_server: &AssetServer) -> AsepriteBundle {
+    AsepriteBundle {
+        aseprite: asset_server.load(sprites::Player::PATH),
+        animation: AsepriteAnimation::from(sprites::Player::tags::DOWN_STAND),
+        transform: Transform::from_xyz(100.0, 100.0, 10.0),
+        ..Default::default()
+    }
+}
+
+fn add_new_player_sprites(
+    mut commands: Commands,
+    mut new_players: Query<Entity, (Added<PlayerId>, With<Interpolated>)>,
+    asset_server: Res<AssetServer>,
+) {
+    for entity in &mut new_players {
+        commands
+            .entity(entity)
+            .insert(create_player_sprite(&asset_server));
+    }
+}
+
+fn add_own_player_sprite(
+    mut commands: Commands,
+    mut new_players: Query<Entity, (With<PlayerId>, Added<Predicted>)>,
+    asset_server: Res<AssetServer>,
+) {
+    for entity in &mut new_players {
+        commands
+            .entity(entity)
+            .insert(create_player_sprite(&asset_server));
+    }
+}
+
 pub(crate) fn predict_movement(
     tick_manager: Res<TickManager>,
-    mut action_query: Query<(Entity, &mut Position, &ActionState<PlayerActions>)>,
+    mut action_query: Query<(Entity, &mut Position, &ActionState<PlayerActions>), With<Predicted>>,
 ) {
+    dbg!(tick_manager.tick());
     for (entity, position, action) in action_query.iter_mut() {
         shared_movement_behaviour(position, action);
     }
@@ -230,32 +278,34 @@ fn upate_sprite_direction(
     mut players: Query<(&ActionState<PlayerActions>, &mut AsepriteAnimation), With<PlayerId>>,
 ) {
     for (input, mut animation) in &mut players {
-        let tag = if input.just_pressed(PlayerActions::Down) {
-            player::sprites::Player::tags::DOWN
-        } else if input.just_pressed(PlayerActions::Up) {
-            player::sprites::Player::tags::UP
-        } else if input.just_pressed(PlayerActions::Left) {
-            player::sprites::Player::tags::LEFT
-        } else if input.just_pressed(PlayerActions::Right) {
-            player::sprites::Player::tags::RIGHT
+        let tag = if input.pressed(PlayerActions::Down) {
+            sprites::Player::tags::DOWN
+        } else if input.pressed(PlayerActions::Up) {
+            sprites::Player::tags::UP
+        } else if input.pressed(PlayerActions::Left) {
+            sprites::Player::tags::LEFT
+        } else if input.pressed(PlayerActions::Right) {
+            sprites::Player::tags::RIGHT
         } else {
-            if input.get_pressed().is_empty() {
-                if input.just_released(PlayerActions::Down) {
-                    player::sprites::Player::tags::DOWN_STAND
-                } else if input.just_released(PlayerActions::Up) {
-                    player::sprites::Player::tags::UP_STAND
-                } else if input.just_released(PlayerActions::Left) {
-                    player::sprites::Player::tags::LEFT_STAND
-                } else if input.just_released(PlayerActions::Right) {
-                    player::sprites::Player::tags::RIGHT_STAND
-                } else {
-                    continue;
+            if let Some(current_tag) = animation.tag() {
+                match current_tag {
+                    sprites::Player::tags::DOWN => sprites::Player::tags::DOWN_STAND,
+                    sprites::Player::tags::UP => sprites::Player::tags::UP_STAND,
+                    sprites::Player::tags::LEFT => sprites::Player::tags::LEFT_STAND,
+                    sprites::Player::tags::RIGHT => sprites::Player::tags::RIGHT_STAND,
+                    _ => current_tag,
                 }
             } else {
-                continue;
+                unreachable!("unassigned tag?")
             }
         };
 
+        if let Some(current_tag) = animation.tag() {
+            if current_tag == tag {
+                continue;
+            }
+        }
+        dbg!("assigned new animation", tag);
         *animation = AsepriteAnimation::from(tag);
         animation.is_playing = true;
     }
@@ -264,16 +314,9 @@ fn upate_sprite_direction(
 pub(crate) fn draw_own_player(
     mut gizmos: Gizmos,
     global: Res<Global>,
-    players: Query<
-        (&PlayerId, &Position),
-        (With<PlayerId>, Without<Predicted>, Without<Interpolated>),
-    >,
+    players: Query<(&PlayerId, &Position), (With<PlayerId>, With<Predicted>)>,
 ) {
-    let player: Vec<_> = players
-        .iter()
-        .filter(|(id, _)| id.0 == global.client_id)
-        .collect();
-    assert_eq!(player.len(), 1);
-    let (_id, pos) = player[0];
-    draw_sprite(&mut gizmos, pos);
+    for (player, pos) in players.iter().filter(|(id, _)| id.0 == global.client_id) {
+        draw_sprite(&mut gizmos, pos);
+    }
 }

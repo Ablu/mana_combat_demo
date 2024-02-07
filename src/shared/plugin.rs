@@ -20,6 +20,7 @@ impl Plugin for SharedPlugin {
 
         // registry types for reflection
         app.register_type::<PlayerId>();
+        app.register_type::<Position>();
     }
 }
 
@@ -41,17 +42,21 @@ pub(crate) fn shared_movement_behaviour(
     mut pos: Mut<Position>,
     action: &ActionState<PlayerActions>,
 ) {
-    const MOVE_SPEED: f32 = 5.0;
+    const MOVE_SPEED: f32 = 2.0;
     if action.pressed(PlayerActions::Up) {
+        dbg!("up");
         pos.y += MOVE_SPEED;
     }
     if action.pressed(PlayerActions::Down) {
+        dbg!("Down");
         pos.y -= MOVE_SPEED;
     }
     if action.pressed(PlayerActions::Left) {
+        dbg!("Left");
         pos.x -= MOVE_SPEED;
     }
     if action.pressed(PlayerActions::Right) {
+        dbg!("right");
         pos.x += MOVE_SPEED;
     }
 }

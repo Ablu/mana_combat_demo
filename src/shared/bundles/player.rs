@@ -5,7 +5,7 @@ use crate::shared::{
 use bevy::prelude::*;
 use bevy_aseprite::{anim::AsepriteAnimation, AsepriteBundle};
 use leafwing_input_manager::prelude::*;
-use lightyear::netcode::ClientId;
+use lightyear::{netcode::ClientId, shared::replication::components::ShouldBePredicted};
 
 #[derive(Bundle)]
 pub struct Player {
@@ -13,20 +13,13 @@ pub struct Player {
     position: Position,
     replicate: Replicate,
     inputs: InputManagerBundle<PlayerActions>,
-    sprite: AsepriteBundle,
+    should_be_predicted: ShouldBePredicted,
 }
-
-pub mod sprites {
-    use bevy_aseprite::aseprite;
-    aseprite!(pub Player, "player.aseprite");
-}
-
 impl Player {
     pub(crate) fn new(
         id: ClientId,
         position: Position,
         input_map: InputMap<PlayerActions>,
-        asset_server: &AssetServer,
     ) -> Self {
         Self {
             id: PlayerId(id),
@@ -43,12 +36,7 @@ impl Player {
                 action_state: ActionState::default(),
                 input_map,
             },
-            sprite: AsepriteBundle {
-                aseprite: asset_server.load(sprites::Player::PATH),
-                animation: AsepriteAnimation::from(sprites::Player::tags::DOWN_STAND),
-                transform: Transform::from_xyz(100.0, 100.0, 10.0),
-                ..Default::default()
-            },
+            should_be_predicted: ShouldBePredicted::default(),
         }
     }
 }
