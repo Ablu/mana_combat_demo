@@ -44,19 +44,15 @@ pub(crate) fn shared_movement_behaviour(
 ) {
     const MOVE_SPEED: f32 = 2.0;
     if action.pressed(PlayerActions::Up) {
-        dbg!("up");
         pos.y += MOVE_SPEED;
     }
     if action.pressed(PlayerActions::Down) {
-        dbg!("Down");
         pos.y -= MOVE_SPEED;
     }
     if action.pressed(PlayerActions::Left) {
-        dbg!("Left");
         pos.x -= MOVE_SPEED;
     }
     if action.pressed(PlayerActions::Right) {
-        dbg!("right");
         pos.x += MOVE_SPEED;
     }
 }

@@ -79,12 +79,10 @@ impl Plugin for ManaServerPlugin {
 }
 
 pub(crate) fn movement(
-    tick_manager: Res<TickManager>,
     mut action_query: Query<(Entity, &mut Position, &ActionState<PlayerActions>)>,
 ) {
     for (entity, position, action) in action_query.iter_mut() {
         shared_movement_behaviour(position, action);
-        dbg!(tick_manager.tick(), entity);
     }
 }
 

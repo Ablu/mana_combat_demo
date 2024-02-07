@@ -217,10 +217,8 @@ fn add_own_player_sprite(
 }
 
 pub(crate) fn predict_movement(
-    tick_manager: Res<TickManager>,
     mut action_query: Query<(Entity, &mut Position, &ActionState<PlayerActions>), With<Predicted>>,
 ) {
-    dbg!(tick_manager.tick());
     for (entity, position, action) in action_query.iter_mut() {
         shared_movement_behaviour(position, action);
     }
