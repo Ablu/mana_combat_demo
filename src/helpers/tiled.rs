@@ -117,7 +117,9 @@ impl AssetLoader for TiledLoader {
                 tiled::DefaultResourceCache::new(),
                 BytesResourceReader::new(&bytes),
             );
-            let map = loader.load_tmx_map(load_context.path()).expect("map should load fine!");
+            let map = loader
+                .load_tmx_map(load_context.path())
+                .expect("map should load fine!");
 
             let mut tilemap_textures = HashMap::default();
             #[cfg(not(feature = "atlas"))]
@@ -266,9 +268,6 @@ pub fn process_loaded_maps(
                         y: tileset.spacing as f32,
                     };
 
-
-
-
                     // Once materials have been created/added we need to then create the layers.
                     for (layer_index, layer) in tiled_map.map.layers().enumerate() {
                         let offset_x = layer.offset_x;
@@ -396,7 +395,7 @@ pub fn process_loaded_maps(
                                 &map_size,
                                 &grid_size,
                                 &map_type,
-                                layer_index as f32,
+                                layer_index as f32 - 100.0,
                             ) * Transform::from_xyz(offset_x, -offset_y, 0.0),
                             map_type,
                             ..Default::default()

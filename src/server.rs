@@ -1,14 +1,11 @@
 use std::net::Ipv4Addr;
-use std::{net::SocketAddr, time::Duration};
+use std::net::SocketAddr;
 
 use bevy::app::{App, FixedUpdate, Plugin, PluginGroup, PluginGroupBuilder};
 use bevy::ecs::entity::Entity;
 use bevy::ecs::system::{Query, Res};
-use bevy::log::info;
 use bevy::prelude::*;
-use bevy_aseprite::anim::AsepriteAnimation;
 use leafwing_input_manager::prelude::*;
-use lightyear::prelude::LinkConditionerConfig;
 use lightyear::server::config::{NetcodeConfig, ServerConfig};
 use lightyear::server::events::ComponentInsertEvent;
 use lightyear::server::input_leafwing::LeafwingInputPlugin;
@@ -18,9 +15,14 @@ use lightyear::shared::sets::{FixedUpdateSet, MainSet};
 use lightyear::shared::tick_manager::TickManager;
 use lightyear::transport::io::{Io, IoConfig, TransportConfig};
 
-use crate::shared::components::{PlayerId, Position};
+use crate::shared::components::ability;
+use crate::shared::components::ability::Ability;
+use crate::shared::components::facing_direction::FacingDirection;
+use crate::shared::components::player_id::PlayerId;
+use crate::shared::components::position::Position;
 use crate::shared::config::{shared_config, KEY, PROTOCOL_ID};
-use crate::shared::plugin::{shared_movement_behaviour, SharedPlugin};
+use crate::shared::plugin::shared_player_input;
+use crate::shared::plugin::SharedPlugin;
 use crate::shared::protocol::{
     protocol, ManaProtocol, PlayerActions, Replicate, LINK_CONDITIONER, REPLICATION_GROUP,
 };
@@ -79,10 +81,26 @@ impl Plugin for ManaServerPlugin {
 }
 
 pub(crate) fn movement(
-    mut action_query: Query<(Entity, &mut Position, &ActionState<PlayerActions>)>,
+    mut commands: Commands,
+    tick_manager: Res<TickManager>,
+    mut action_query: Query<(
+        Entity,
+        &mut Position,
+        &mut FacingDirection,
+        Option<&Ability>,
+        &ActionState<PlayerActions>,
+    )>,
 ) {
-    for (entity, position, action) in action_query.iter_mut() {
-        shared_movement_behaviour(position, action);
+    for (entity, position, direction, ability, action) in action_query.iter_mut() {
+        shared_player_input(
+            &mut commands,
+            entity,
+            position,
+            direction,
+            ability,
+            &tick_manager,
+            action,
+        );
     }
 }
 

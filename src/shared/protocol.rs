@@ -8,7 +8,10 @@ use std::{
     time::Duration,
 };
 
-use crate::shared::components::*;
+use crate::shared::components::ability::Ability;
+use crate::shared::components::facing_direction::FacingDirection;
+use crate::shared::components::player_id::PlayerId;
+use crate::shared::components::position::Position;
 
 pub const REPLICATION_GROUP: ReplicationGroup = ReplicationGroup::Group(1);
 
@@ -21,34 +24,22 @@ pub const LINK_CONDITIONER: LinkConditionerConfig = LinkConditionerConfig {
 #[message_protocol(protocol = "ManaProtocol")]
 pub enum Messages {}
 
-pub struct PositionInterpolator;
-impl LerpFn<Position> for PositionInterpolator {
-    fn lerp(start: Position, other: Position, t: f32) -> Position {
-        Position {
-            x: start.x + (other.x - start.x) * t,
-            y: start.y + (other.y - start.y) * t,
-        }
-    }
-}
-
 #[component_protocol(protocol = "ManaProtocol")]
 pub enum Components {
     #[sync(once)]
     PlayerId(PlayerId),
-    #[sync(
-        full,
-        lerp = "PositionInterpolator",
-        corrector = "InterpolatedCorrector"
-    )]
+    #[sync(full)]
     Position(Position),
+    #[sync(full)]
+    FacingDirection(FacingDirection),
+    #[sync(once)]
+    Ability(Ability),
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone, Copy, Hash, Reflect, Actionlike)]
 pub enum PlayerActions {
-    Up,
-    Down,
-    Left,
-    Right,
+    Move,
+    Slash,
 }
 
 impl LeafwingUserAction for PlayerActions {}

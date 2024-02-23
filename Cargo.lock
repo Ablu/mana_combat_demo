@@ -517,38 +517,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "bevy_aseprite"
-version = "0.12.0"
-source = "git+https://github.com/Ablu/bevy_aseprite.git?rev=638d34df055d1420e131f92b6e7e1499f8f061af#638d34df055d1420e131f92b6e7e1499f8f061af"
+name = "bevy_asepritesheet"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a91b8231714a073bae4d944fce9ee968af065621c5d0dc6ceb96b6ec2a3aa7c0"
 dependencies = [
- "anyhow",
  "bevy",
- "bevy_aseprite_derive",
- "bevy_aseprite_reader",
-]
-
-[[package]]
-name = "bevy_aseprite_derive"
-version = "0.3.1"
-source = "git+https://github.com/Ablu/bevy_aseprite.git?rev=638d34df055d1420e131f92b6e7e1499f8f061af#638d34df055d1420e131f92b6e7e1499f8f061af"
-dependencies = [
- "bevy_aseprite_reader",
- "heck",
- "proc-macro-error",
- "quote",
- "syn 2.0.48",
-]
-
-[[package]]
-name = "bevy_aseprite_reader"
-version = "0.1.1"
-source = "git+https://github.com/Ablu/bevy_aseprite.git?rev=638d34df055d1420e131f92b6e7e1499f8f061af#638d34df055d1420e131f92b6e7e1499f8f061af"
-dependencies = [
- "flate2",
- "image",
- "nom",
- "thiserror",
- "tracing",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -2934,7 +2910,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
- "bevy_aseprite",
+ "bevy_asepritesheet",
  "bevy_ecs_tilemap",
  "clap",
  "leafwing-input-manager",
@@ -3521,30 +3497,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7e8366a6159044a37876a2b9817124296703c586a5c92e2c53751fa06d8d43e8"
 dependencies = [
  "toml_edit 0.20.7",
-]
-
-[[package]]
-name = "proc-macro-error"
-version = "1.0.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "da25490ff9892aab3fcf7c36f08cfb902dd3e71ca0f9f9517bea02a73a5ce38c"
-dependencies = [
- "proc-macro-error-attr",
- "proc-macro2",
- "quote",
- "syn 1.0.109",
- "version_check",
-]
-
-[[package]]
-name = "proc-macro-error-attr"
-version = "1.0.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a1be40180e52ecc98ad80b184934baf3d0d29f979574e439af5a55274b35f869"
-dependencies = [
- "proc-macro2",
- "quote",
- "version_check",
 ]
 
 [[package]]

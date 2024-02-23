@@ -1,4 +1,10 @@
-use crate::shared::protocol::PlayerActions;
+use std::time::Duration;
+
+use crate::shared::{
+    components::ability::Ability, config::duration_to_ticks, protocol::PlayerActions,
+};
+
+use self::{facing_direction::FacingDirection, player_id::PlayerId, position::Position};
 
 use super::components::*;
 use bevy::{prelude::*, render::RenderPlugin};
@@ -9,14 +15,17 @@ use lightyear::{
         interpolation::{plugin::InterpolationSet, Interpolated},
         prediction::{plugin::PredictionSet, Predicted},
     },
-    shared::{sets::FixedUpdateSet, tick_manager::TickManager},
+    shared::{
+        sets::FixedUpdateSet,
+        tick_manager::{Tick, TickManager},
+    },
 };
 
 pub struct SharedPlugin;
 
 impl Plugin for SharedPlugin {
     fn build(&self, app: &mut App) {
-        if app.is_plugin_added::<RenderPlugin>() {}
+        app.add_systems(FixedUpdate, (update_abilities).in_set(FixedUpdateSet::Main));
 
         // registry types for reflection
         app.register_type::<PlayerId>();
@@ -24,44 +33,53 @@ impl Plugin for SharedPlugin {
     }
 }
 
-pub(crate) fn draw_elements(
-    mut gizmos: Gizmos,
-    players: Query<&Position, (With<Interpolated>, With<PlayerId>)>,
+fn update_abilities(
+    mut commands: Commands,
+    tick_manager: Res<TickManager>,
+    abilities: Query<(Entity, &Ability)>,
 ) {
-    for position in &players {
-        gizmos.rect_2d(
-            Vec2::new(position.x, position.y),
-            0.0,
-            Vec2::new(64.0, 64.0),
-            Color::RED,
-        );
+    for (entity, ability) in abilities.iter() {
+        if ability.end_tick == tick_manager.tick() {
+            commands.entity(entity).remove::<Ability>();
+        }
     }
 }
 
-pub(crate) fn shared_movement_behaviour(
+pub fn shared_player_input(
+    commands: &mut Commands,
+    entity: Entity,
     mut pos: Mut<Position>,
+    mut direction: Mut<FacingDirection>,
+    ability: Option<&Ability>,
+    tick_manager: &TickManager,
     action: &ActionState<PlayerActions>,
 ) {
-    const MOVE_SPEED: f32 = 3.0;
-    if action.pressed(PlayerActions::Up) {
-        pos.y += MOVE_SPEED;
+    // no movement while an attack is happening!
+    if ability.is_some() {
+        return;
     }
-    if action.pressed(PlayerActions::Down) {
-        pos.y -= MOVE_SPEED;
+
+    if action.pressed(PlayerActions::Slash) {
+        let current_tick = tick_manager.tick();
+        let duration = Duration::from_millis(200);
+        commands.entity(entity).insert(Ability {
+            position: pos.0,
+            direction: Vec2::ZERO,
+            start_tick: current_tick,
+            end_tick: current_tick + duration_to_ticks(duration),
+        });
     }
-    if action.pressed(PlayerActions::Left) {
-        pos.x -= MOVE_SPEED;
-    }
-    if action.pressed(PlayerActions::Right) {
-        pos.x += MOVE_SPEED;
+
+    const WALK_SPEED: f32 = 3.0;
+    if action.pressed(PlayerActions::Move) {
+        let input = action.clamped_axis_pair(PlayerActions::Move).unwrap().xy();
+        let dir = input.clamp_length_max(1.0);
+        *direction = FacingDirection(dir);
+        let delta = dir * WALK_SPEED;
+        pos.0 += delta;
     }
 }
 
 pub fn draw_sprite(gizmos: &mut Gizmos, position: &Position) {
-    gizmos.rect_2d(
-        Vec2::new(position.x, position.y),
-        0.0,
-        Vec2::new(64.0, 64.0),
-        Color::GRAY,
-    );
+    gizmos.rect_2d(position.0, 0.0, Vec2::new(64.0, 64.0), Color::GRAY);
 }

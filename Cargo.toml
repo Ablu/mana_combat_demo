@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 bevy = {version = "0.12.1", features=["dynamic_linking"]}
 bevy-inspector-egui = "0.22.1"
-bevy_aseprite = { git = "https://github.com/Ablu/bevy_aseprite.git", rev="638d34df055d1420e131f92b6e7e1499f8f061af" }
+bevy_asepritesheet = "0.5"
 bevy_ecs_tilemap = { git = "https://github.com/StarArawn/bevy_ecs_tilemap.git", rev="b08a5d997867d5e5a760e296dc38e435c6b268cc" }
 clap = { version = "4.4.18", features = ["derive"] }
 leafwing-input-manager = "0.11.2"
