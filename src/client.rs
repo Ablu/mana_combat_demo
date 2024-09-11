@@ -63,11 +63,11 @@ pub struct ClientPluginGroup {
 }
 
 impl ClientPluginGroup {
-    pub fn new() -> Self {
+    pub fn new(ip: String) -> Self {
         let mut rng = rand::thread_rng();
         let client_id = rng.gen_range(0..1000000);
         let auth = Authentication::Manual {
-            server_addr: "127.0.0.1:8888"
+            server_addr: ip
                 .parse()
                 .expect("should be valid SocketAddr"),
             client_id,

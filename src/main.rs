@@ -26,7 +26,10 @@ fn startup(mut commands: Commands, asset_server: Res<AssetServer>) {
 #[derive(Parser, PartialEq, Debug)]
 enum Cli {
     Server {},
-    Client {},
+    Client {
+        #[arg(default_value = "127.0.0.1:8888")]
+        ip: String,
+    },
 }
 
 fn main() {
@@ -47,7 +50,7 @@ fn main() {
     // app.add_plugins(WorldInspectorPlugin::new());
     match cli {
         Cli::Server {} => app.add_plugins(ServerPluginGroup::new()),
-        Cli::Client {} => app.add_plugins(ClientPluginGroup::new()),
+        Cli::Client { ip } => app.add_plugins(ClientPluginGroup::new(ip)),
     };
 
     app.add_plugins(TilemapPlugin)
