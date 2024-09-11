@@ -1,5 +1,5 @@
 use std::{
-    net::{Ipv4Addr, SocketAddr},
+    net::{Ipv6Addr, SocketAddr},
     time::Duration,
 };
 
@@ -67,14 +67,12 @@ impl ClientPluginGroup {
         let mut rng = rand::thread_rng();
         let client_id = rng.gen_range(0..1000000);
         let auth = Authentication::Manual {
-            server_addr: ip
-                .parse()
-                .expect("should be valid SocketAddr"),
+            server_addr: ip.parse().expect("should be valid SocketAddr"),
             client_id,
             private_key: KEY,
             protocol_id: PROTOCOL_ID,
         };
-        let client_addr = SocketAddr::new(Ipv4Addr::UNSPECIFIED.into(), 0);
+        let client_addr = SocketAddr::new(Ipv6Addr::UNSPECIFIED.into(), 0);
         let transport_config = TransportConfig::UdpSocket(client_addr);
 
         let io = Io::from_config(

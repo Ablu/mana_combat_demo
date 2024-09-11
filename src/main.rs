@@ -27,7 +27,7 @@ fn startup(mut commands: Commands, asset_server: Res<AssetServer>) {
 enum Cli {
     Server {},
     Client {
-        #[arg(default_value = "127.0.0.1:8888")]
+        #[arg(default_value = "[::1]:8888")]
         ip: String,
     },
 }

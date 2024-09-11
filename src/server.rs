@@ -1,4 +1,4 @@
-use std::net::Ipv4Addr;
+use std::net::Ipv6Addr;
 use std::net::SocketAddr;
 
 use bevy::app::{App, FixedUpdate, Plugin, PluginGroup, PluginGroupBuilder};
@@ -35,7 +35,7 @@ pub struct ServerPluginGroup {
 
 impl ServerPluginGroup {
     pub fn new() -> Self {
-        let server_addr = SocketAddr::new(Ipv4Addr::UNSPECIFIED.into(), 8888);
+        let server_addr = SocketAddr::new(Ipv6Addr::UNSPECIFIED.into(), 8888);
         let transport_config = TransportConfig::UdpSocket(server_addr);
         let io = Io::from_config(
             IoConfig::from_transport(transport_config).with_conditioner(LINK_CONDITIONER),
