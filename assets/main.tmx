@@ -533,40 +533,40 @@
   </wangsets>
  </tileset>
  <tileset firstgid="1134" name="collision" tilewidth="32" tileheight="32" tilecount="2" columns="2">
-  <image source="../../../tales/sourceoftales/tiles/collision.png" width="64" height="32"/>
+  <image source="tiles/collision.png" width="64" height="32"/>
  </tileset>
  <tileset firstgid="1136" name="treetop" tilewidth="96" tileheight="96" tilecount="4" columns="2">
-  <image source="../../../tales/sourceoftales/tiles/treetop.png" width="192" height="224"/>
+  <image source="tiles/treetop.png" width="192" height="224"/>
  </tileset>
  <tileset firstgid="1140" name="shadow" tilewidth="32" tileheight="32" tilecount="10" columns="5">
-  <image source="../../../tales/sourceoftales/tiles/shadow.png" width="160" height="64"/>
+  <image source="tiles/shadow.png" width="160" height="64"/>
  </tileset>
  <tileset firstgid="1150" name="magecity" tilewidth="32" tileheight="32" tilecount="360" columns="8">
-  <image source="../../../tales/sourceoftales/tiles/magecity.png" width="256" height="1450"/>
+  <image source="tiles/magecity.png" width="256" height="1450"/>
  </tileset>
  <tileset firstgid="1510" name="victorian_house" tilewidth="32" tileheight="32" tilecount="117" columns="9">
-  <image source="../../../tales/sourceoftales/tiles/victorian_house.png" width="288" height="416"/>
+  <image source="tiles/victorian_house.png" width="288" height="416"/>
  </tileset>
  <tileset firstgid="1627" name="plants" tilewidth="32" tileheight="64" tilecount="54" columns="9">
-  <image source="../../../tales/sourceoftales/tiles/plants.png" width="288" height="384"/>
+  <image source="tiles/plants.png" width="288" height="384"/>
  </tileset>
  <tileset firstgid="1681" name="tree_stump" tilewidth="32" tileheight="32" tilecount="1" columns="1">
-  <image source="../../../tales/sourceoftales/tiles/tree_stump.png" width="32" height="32"/>
+  <image source="tiles/tree_stump.png" width="32" height="32"/>
  </tileset>
  <tileset firstgid="1682" name="water_lilies" tilewidth="32" tileheight="32" tilecount="6" columns="3">
-  <image source="../../../tales/sourceoftales/tiles/water_lilies.png" width="96" height="64"/>
+  <image source="tiles/water_lilies.png" width="96" height="64"/>
  </tileset>
  <tileset firstgid="1688" name="wheelbarrows" tilewidth="32" tileheight="64" tilecount="10" columns="5">
-  <image source="../../../tales/sourceoftales/tiles/wheelbarrows.png" width="160" height="128"/>
+  <image source="tiles/wheelbarrows.png" width="160" height="128"/>
  </tileset>
  <tileset firstgid="1698" name="buckets" tilewidth="32" tileheight="32" tilecount="6" columns="3">
-  <image source="../../../tales/sourceoftales/tiles/buckets.png" width="96" height="64"/>
+  <image source="tiles/buckets.png" width="96" height="64"/>
  </tileset>
  <tileset firstgid="1704" name="country" tilewidth="32" tileheight="32" tilecount="20" columns="5">
-  <image source="../../../tales/sourceoftales/tiles/country.png" width="160" height="128"/>
+  <image source="tiles/country.png" width="160" height="128"/>
  </tileset>
  <tileset firstgid="1724" name="flowers" tilewidth="32" tileheight="32" tilecount="200" columns="20">
-  <image source="../../../tales/sourceoftales/tiles/flowers.png" width="640" height="320"/>
+  <image source="tiles/flowers.png" width="640" height="320"/>
  </tileset>
  <layer id="3" name="Terrain" width="65" height="39">
   <data encoding="base64" compression="zlib">

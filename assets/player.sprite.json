@@ -543,7 +543,7 @@
  "meta": {
   "app": "https://github.com/LibreSprite/LibreSprite/",
   "version": "1.0",
-  "image": "/home/ablu/mana/mana_combat_demo/assets/player.png",
+  "image": "player.png",
   "format": "I8",
   "size": { "w": 7680, "h": 128 },
   "scale": "1",
