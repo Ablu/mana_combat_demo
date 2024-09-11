@@ -61,7 +61,7 @@ pub fn shared_player_input(
 
     if action.pressed(PlayerActions::Slash) {
         let current_tick = tick_manager.tick();
-        let duration = Duration::from_millis(200);
+        let duration = Duration::from_millis(300);
         commands.entity(entity).insert(Ability {
             position: pos.0,
             direction: Vec2::ZERO,
